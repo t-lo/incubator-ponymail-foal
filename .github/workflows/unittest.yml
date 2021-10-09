@@ -13,10 +13,10 @@ jobs:
         python-version: [3.7]
 
     steps:
-    - uses: actions/checkout@master
+    - uses: actions/checkout@dkim_fixes
       with:
         persist-credentials: false
-    - uses: actions/checkout@master   
+    - uses: actions/checkout@dkim_fixes   
       with:
         persist-credentials: false
         repository: apache/incubator-ponymail-unit-tests
