@@ -1,0 +1,60 @@
+version: '3'
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.22
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "curl --silent --fail elasticsearch:9200/_cluster/health || exit 1"]
+      retries: 100
+      interval: 5s
+      start_period: 30s
+    volumes:
+      # Elasticsearch does not handle volume ownership. Run:
+      #    mkdir -p ponymail-data/elasticsearch
+      #    chmod g+rwx ponymail-data/elasticsearch
+      # before starting this the first time.
+      - ./ponymail-data/elasticsearch:/usr/share/elasticsearch/data
+    environment:
+      - "bootstrap.memory_lock=true"
+      - "xpack.license.self_generAted.type=basic"
+      - "xpack.security.enabled=false"
+      - "xpack.watcher.enabled=false"
+      - "xpack.graph.enabled=false"
+      - "xpack.ml.enabled=false"
+      - "ingest.geoip.downloader.enabled=false"
+      - "discovery.type=single-node"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    networks:
+      - ponymail
+
+  ponymail:
+    image: "ponymail"
+    restart: unless-stopped
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+#   Uncomment to publish the ponymail service on localhost; required to serve
+#   content with a web server running on the host.
+#    ports:
+#      - 127.0.0.1:8080:80
+    volumes:
+      - ./ponymail-data/www:/var/www/ponymail
+      - ./ponymail-import:/var/maildata
+    entrypoint:
+      - /docker-entrypoint.sh
+    environment:
+      - "ELASTICSEARCH_URL=http://elasticsearch:9200/"
+      - "PONYSERVER_BIND_ADDRESS=0.0.0.0"
+      - "PONYSERVER_BIND_PORT=8080"
+    networks:
+      - ponymail
+
+networks:
+  ponymail:
+    name: ponymail

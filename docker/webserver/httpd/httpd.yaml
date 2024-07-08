@@ -1,0 +1,20 @@
+#
+# Ponymail httpd integration
+#
+
+version: '3'
+services:
+  httpd:
+    image: httpd:2.4-alpine
+    restart: always
+    volumes:
+      - ./ponymail-data/www:/var/www/ponymail
+      - ./httpd-ponymail.conf:/usr/local/apache2/conf/httpd-ponymail.conf
+      - ./httpd-entry.sh:/httpd-entry.sh
+    entrypoint:
+      - /httpd-entry.sh
+    networks:
+      - ponymail
+    # --- keep in sync with 'httpd-ponymail.conf' ---
+    ports:
+      - 127.0.0.1:80:80

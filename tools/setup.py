@@ -171,6 +171,18 @@ parser.add_argument(
     type=str,
     help="Cryptographic nonce to use if generator is DKIM/RFC-6376 (--generator dkim)",
 )
+parser.add_argument(
+    "--bind-address",
+    dest="bind_address",
+    type=str,
+    help="Hostname / IP address to bind ponymail server to. Defaults to 127.0.0.1.",
+)
+parser.add_argument(
+    "--bind-port",
+    dest="bind_port",
+    type=int,
+    help="Listener port of ponymail server. Defaults to 8080.",
+)
 args = parser.parse_args()
 
 print("")
@@ -192,6 +204,8 @@ if args.defaults:
     genname = "dkim"
     urlPrefix = ""
     nonce = None
+    bind_address = "127.0.0.1"
+    bind_port = 8080
 
 if args.devel:
     dburl =  DEFAULT_DB_URL
@@ -205,6 +219,8 @@ if args.devel:
     genname = "dkim"
     urlPrefix = ""
     nonce = None
+    bind_address = "127.0.0.1"
+    bind_port = 8080
 
 # Accept CLI args, copy them
 if args.dburl:
@@ -236,6 +252,11 @@ if args.generator:
         sys.exit(-1)
 if args.generator and any(x == "dkim" for x in args.generator.split(' ')) and args.nonce is not None:
     nonce = args.nonce
+
+if args.bind_address:
+    bind_address = args.bind_address
+if args.bind_port:
+    bind_port = args.bind_port
 
 if not dburl:
     dburl = input("What is the URL of the ElasticSearch server? [%s]: " % DEFAULT_DB_URL)
@@ -429,8 +450,8 @@ print("Writing UI backend configuration file %s" % server_cfg)
 with open(server_cfg, "w") as f:
     f.write("""
 server:
-  port: 8080             # Port to bind to
-  bind: 127.0.0.1        # IP to bind to - typically 127.0.0.1 for localhost or 0.0.0.0 for all IPs
+  port: %s             # Port to bind to
+  bind: %s        # IP to bind to - typically 127.0.0.1 for localhost or 0.0.0.0 for all IPs
 
 
 database:
@@ -464,7 +485,7 @@ oauth:
   github_client_id:     ~
   github_client_secret: ~
 
-""" % (dburl, dbname, "true" if wce else "false", mlserver, mldom))
+""" % (bind_port, bind_address, dburl, dbname, "true" if wce else "false", mlserver, mldom))
 
 
 print("All done, Pony Mail should...work now :)")

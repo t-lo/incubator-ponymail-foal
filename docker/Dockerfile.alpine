@@ -1,0 +1,32 @@
+# Minimal ponymail container based on Alpine.
+# This version does not ship elasticsearch but uses an external
+#   Elasticsearch container (see compose-alpine.yaml)
+
+FROM alpine:3.20
+
+ENV LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8
+
+RUN apk update \
+    && apk add python3 py-pip rsync
+
+COPY server /opt/ponymail/server
+COPY tools /opt/ponymail/tools
+COPY webui /opt/ponymail/webui
+
+RUN pip install -r /opt/ponymail/server/requirements.txt --break-system-packages \
+    && pip install -r /opt/ponymail/tools/requirements.txt --break-system-packages \
+    && pip install html2text --break-system-packages
+
+# "ponymail" user / group used by entrypoint to chown the wwwroot to.
+RUN addgroup -g 512 -S ponymail; \
+    adduser -S -u 512 -G ponymail ponymail
+
+COPY docker/container/docker-entrypoint.sh \
+     docker/container/import-mailboxes.sh \
+     docker/container/rsync.exclude \
+     /
+
+WORKDIR /var/www/ponymail
+
+ENTRYPOINT [ "/docker-entrypoint.sh" ]

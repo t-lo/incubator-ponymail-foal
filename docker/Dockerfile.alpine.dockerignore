@@ -1,0 +1,11 @@
+# The minimal Apline container ships ponymail.
+# In order to COPY it into the container image at build time it requires a more
+# generous Dockerfile.
+
+**
+
+!server/**
+!tools/**
+!webui/**
+!docker/*
+!docker-config/*

@@ -1,0 +1,17 @@
+{
+    log {
+        level DEBUG
+    }
+}
+
+{$PONYMAIL_SITE_ADDRESS} {
+        handle /api/* {
+		    reverse_proxy ponymail:8080 {
+			    header_up Host {host}
+			    header_up X-Forwarded-Proto https
+			    header_up X-Real-IP {remote_host}
+		    }
+        }
+        root * /var/www/ponymail/webui
+        file_server
+}

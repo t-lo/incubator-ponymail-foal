@@ -1,0 +1,27 @@
+#
+# Ponymail Caddy integration
+#
+
+version: '3'
+services:
+  caddy:
+    image: caddy:2.8.4
+    restart: always
+    volumes:
+      - ./ponymail-data/www:/var/www/ponymail
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./caddy-data:/data
+    networks:
+      - ponymail
+# --- Local HTTP for testing / development ---
+    ports:
+      - 127.0.0.1:80:80
+    environment:
+      - "PONYMAIL_SITE_ADDRESS=:80"
+# --- Public config ---
+# MAKE SURE DNS FOR YOUR HOST IS POINTING TO THE CORRECT IP BEFORE STARTING.
+#    ports:
+#      - 80:80
+#      - 443:443
+#    environment:
+#      - "PONYMAIL_SITE_ADDRESS=pony.mydomain.org"
